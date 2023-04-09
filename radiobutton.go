@@ -65,14 +65,13 @@ func (r *RadioButton) Parent() *RadioButtonGroup {
 //
 // RadioButtonGroup is not a drawable widget.
 type RadioButtonGroup struct {
+	// Children managed by this RadioButtonGroup.
 	buttons []*RadioButton
 
 	// Defaults to use when constructing new RadioButton instances. If these are
 	// tcell.ColorDefault, this sticks with the defaults provided in
 	// NewCheckbox.
-	labelColor           tcell.Color
-	fieldBackgroundColor tcell.Color
-	fieldTextColor       tcell.Color
+	labelColor, fieldBackgroundColor, fieldTextColor tcell.Color
 
 	// Default to use when constructing new RadioButton instances. If this is
 	// "", this sticks with the default in NewCheckbox. Note that the default
@@ -122,6 +121,10 @@ func NewRadioButtonGroup() *RadioButtonGroup {
 }
 
 // NewRadioButton returns a new RadioButton assigned to this group.
+//
+// RadioButtons cannot be removed from the group once they are created.
+// However, a radio button group is not itself a drawable component,
+// so it can be removed from the UI.
 func (g *RadioButtonGroup) NewRadioButton() *RadioButton {
 	c := NewCheckbox()
 	if g.checkedString != "" {
