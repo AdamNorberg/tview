@@ -66,7 +66,7 @@ func (r *RadioButton) Parent() *RadioButtonGroup {
 // RadioButtonGroup is not a drawable widget.
 type RadioButtonGroup struct {
 	// Children managed by this RadioButtonGroup.
-	buttons []*RadioButton
+	radioButtons []*RadioButton
 
 	// Defaults to use when constructing new RadioButton instances. If these are
 	// tcell.ColorDefault, this sticks with the defaults provided in
@@ -140,7 +140,7 @@ func (g *RadioButtonGroup) NewRadioButton() *RadioButton {
 		c.SetFieldTextColor(g.fieldTextColor)
 	}
 
-	i := len(g.buttons)
+	i := len(g.radioButtons)
 	c.SetChangedFunc(func(checked bool) {
 		g.handleCheckEvent(i, checked)
 	})
@@ -151,7 +151,7 @@ func (g *RadioButtonGroup) NewRadioButton() *RadioButton {
 		parentIdx: i,
 	}
 
-	g.buttons = append(g.buttons, r)
+	g.radioButtons = append(g.radioButtons, r)
 	return r
 }
 
@@ -167,16 +167,16 @@ func (g *RadioButtonGroup) SetStayChecked(stayChecked bool) {
 	g.stayChecked = stayChecked
 }
 
-// Len returns the number of RadioButton instances associated with this
-// RadioButtonGroup.
-func (g *RadioButtonGroup) Len() int {
-	return len(g.buttons)
+// GetRadioButtonCount returns the number of RadioButton instances associated
+// with this RadioButtonGroup.
+func (g *RadioButtonGroup) GetRadioButtonCount() int {
+	return len(g.radioButtons)
 }
 
-// Get returns the RadioButton at the provided index. If the provided index
-// is invalid, this panics.
-func (g *RadioButtonGroup) Get(idx int) *RadioButton {
-	return g.buttons[idx]
+// GetRadioButton returns the RadioButton at the provided index. If the provided
+// index is invalid, this panics.
+func (g *RadioButtonGroup) GetRadioButton(idx int) *RadioButton {
+	return g.radioButtons[idx]
 }
 
 // Checked returns the currently-checked RadioButton in the group, if any.
@@ -184,7 +184,7 @@ func (g *RadioButtonGroup) Checked() *RadioButton {
 	if g.checkedIdx < 0 {
 		return nil
 	}
-	return g.buttons[g.checkedIdx]
+	return g.radioButtons[g.checkedIdx]
 }
 
 // PreviouslyChecked returns the RadioButton in the group that was checked
@@ -199,7 +199,7 @@ func (g *RadioButtonGroup) PreviouslyChecked() *RadioButton {
 	if g.prevCheckedIdx < 0 {
 		return nil
 	}
-	return g.buttons[g.prevCheckedIdx]
+	return g.radioButtons[g.prevCheckedIdx]
 }
 
 // Check sets the specified child (identified by index) to be the checked
@@ -217,10 +217,10 @@ func (g *RadioButtonGroup) Check(idx int) {
 			// Nothing to do.
 			return
 		}
-		g.buttons[g.checkedIdx].SetChecked(false)
+		g.radioButtons[g.checkedIdx].SetChecked(false)
 		return
 	}
-	g.buttons[idx].SetChecked(true)
+	g.radioButtons[idx].SetChecked(true)
 }
 
 // handleCheckEvent is the first responder to state changes for the RadioButton
@@ -278,8 +278,8 @@ func (g *RadioButtonGroup) SetFinishedChangingFunc(f func(unchecked, checked *Ra
 // duration of the call, which handleCheckEvent uses to filter out the events
 // created as a side effect of changes that react itself imposes.
 func (g *RadioButtonGroup) react(idx int, newState bool) (unchecked, checked *RadioButton) {
-	if idx < 0 || idx >= len(g.buttons) {
-		panic(fmt.Errorf("can't react to child %d (%t) from a RadioButtonGroup with %d children", idx, newState, len(g.buttons)))
+	if idx < 0 || idx >= len(g.radioButtons) {
+		panic(fmt.Errorf("can't react to child %d (%t) from a RadioButtonGroup with %d children", idx, newState, len(g.radioButtons)))
 	}
 	if g.ignoreEvent {
 		panic("react is not reentrant -- events should be discarded right now")
@@ -291,7 +291,7 @@ func (g *RadioButtonGroup) react(idx int, newState bool) (unchecked, checked *Ra
 		g.ignoreEvent = false
 	}()
 
-	target := g.buttons[idx]
+	target := g.radioButtons[idx]
 
 	if newState {
 		// Checking a box.
@@ -304,7 +304,7 @@ func (g *RadioButtonGroup) react(idx int, newState bool) (unchecked, checked *Ra
 
 		// Uncheck the old box. Note that the event from doing this will be
 		// discarded (due to g.ignoreEvent).
-		former := g.buttons[g.checkedIdx]
+		former := g.radioButtons[g.checkedIdx]
 		former.SetChecked(false)
 
 		g.prevCheckedIdx = g.checkedIdx
